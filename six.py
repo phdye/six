@@ -181,19 +181,17 @@ class _SixMetaPathImporter(object):
 
     def _add_module(self, mod, *fullnames):
         for fullname in fullnames:
-            self.known_modules[self.name + "." + fullname] = mod
+            full = self.name + "." + fullname
+            self.known_modules[full] = mod
+            sys.modules[full] = mod
 
     def _get_module(self, fullname):
         return self.known_modules[self.name + "." + fullname]
 
-    def find_module(self, fullname, path=None):
-        if fullname in self.known_modules:
-            return self
-        return None
-
     def find_spec(self, fullname, path, target=None):
         if fullname in self.known_modules:
-            return spec_from_loader(fullname, self)
+            return spec_from_loader(fullname, self,
+                                   is_package=self.is_package(fullname))
         return None
 
     def __get_module(self, fullname):
@@ -202,19 +200,6 @@ class _SixMetaPathImporter(object):
         except KeyError:
             raise ImportError("This loader does not know module " + fullname)
 
-    def load_module(self, fullname):
-        try:
-            # in case of a reload
-            return sys.modules[fullname]
-        except KeyError:
-            pass
-        mod = self.__get_module(fullname)
-        if isinstance(mod, MovedModule):
-            mod = mod._resolve()
-        else:
-            mod.__loader__ = self
-        sys.modules[fullname] = mod
-        return mod
 
     def is_package(self, fullname):
         """
@@ -234,7 +219,12 @@ class _SixMetaPathImporter(object):
     get_source = get_code  # same as get_code
 
     def create_module(self, spec):
-        return self.load_module(spec.name)
+        mod = self.__get_module(spec.name)
+        if isinstance(mod, MovedModule):
+            mod = mod._resolve()
+        else:
+            mod.__loader__ = self
+        return mod
 
     def exec_module(self, module):
         pass
