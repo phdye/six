@@ -169,10 +169,12 @@ class MovedAttribute(_LazyDescr):
 class _SixMetaPathImporter(object):
 
     """
-    A meta path importer to import six.moves and its submodules.
+    A meta path importer to import ``six.moves`` and its submodules.
 
-    This class implements a PEP302 finder and loader. It should be compatible
-    with Python 2.5 and all existing versions of Python3
+    The importer now follows the PEP 451 loader protocol while remaining
+    compatible with Python 2.5 and all currently supported versions of Python,
+    including Python 3.12.  In other words, it continues to support every
+    version of Python that earlier releases of :mod:`six` supported.
     """
 
     def __init__(self, six_module_name):
