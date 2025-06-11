@@ -1052,3 +1052,18 @@ class EnsureTests:
             assert converted_unicode == self.UNICODE_EMOJI and isinstance(converted_unicode, str)
             # PY3: bytes -> str
             assert converted_binary == self.UNICODE_EMOJI and isinstance(converted_unicode, str)
+
+
+def test_moves_importable_py312():
+    if sys.version_info < (3, 12):
+        pytest.skip("Python 3.12 required")
+    import importlib
+    mod = importlib.import_module('six.moves')
+    assert mod is six.moves
+    sub = importlib.import_module('six.moves.urllib.parse')
+    assert sub is six.moves.urllib.parse
+    pkg = importlib.import_module('six.moves.urllib')
+    assert pkg is six.moves.urllib
+    assert 'six.moves' in sys.modules
+    assert 'six.moves.urllib.parse' in sys.modules
+    assert 'six.moves.urllib' in sys.modules
